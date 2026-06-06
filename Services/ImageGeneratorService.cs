@@ -11,7 +11,7 @@ public class ImageGeneratorService : IImageGeneratorService {
     private readonly ILogger<ImageGeneratorService> _logger;
     private readonly string                         _apiToken;
 
-    private const string ModelUrl = "https://router.huggingface.co/hf-inference/models/stabilityai/stable-diffusion-xl-base-1.0";
+    private const string ModelUrl = "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell";
 
     public ImageGeneratorService(HttpClient     httpClient, ILogger<ImageGeneratorService> logger,
                                  IConfiguration configuration) {
@@ -40,8 +40,9 @@ public class ImageGeneratorService : IImageGeneratorService {
                     parameters = new {
                         width               = 1024,
                         height              = 768,
-                        num_inference_steps = 30,
-                        guidance_scale      = 7.5
+                        // FLUX.1-schnell is a timestep-distilled model: it targets ~4 steps
+                        // and ignores guidance_scale, so we keep steps low to stay fast.
+                        num_inference_steps = 4
                     }
                 };
 

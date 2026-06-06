@@ -210,28 +210,20 @@ public class CardRenderService : ICardRenderService {
     }
 
     private async Task DrawSymbolAsync(Image image, string symbol, int x, int y, int size) {
-        var symbolPath = Path.Combine(_environment.WebRootPath, "assets", "symbols", $"{symbol}.svg");
+        var symbolPath = Path.Combine(_environment.WebRootPath, "assets", "symbols", $"{symbol}.png");
 
-        if (File.Exists(symbolPath)) {
-            try {
-                var       svgContent = await File.ReadAllTextAsync(symbolPath);
-                using var svgStream  = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(svgContent));
+        if (!File.Exists(symbolPath)) {
+            _logger.LogWarning("Mana/text symbol asset not found: {Symbol} ({Path})", symbol, symbolPath);
+            return;
+        }
 
-                var svgDoc = Svg.SvgDocument.Open<Svg.SvgDocument>(svgStream);
-                svgDoc.Width  = size;
-                svgDoc.Height = size;
-
-                using var bitmap = svgDoc.Draw();
-                using var ms     = new MemoryStream();
-                bitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-                ms.Position = 0;
-
-                using var symbolImage = await Image.LoadAsync(ms);
-                image.Mutate(ctx => ctx.DrawImage(symbolImage, new Point(x, y), 1f));
-            }
-            catch {
-                // Skip if symbol fails
-            }
+        try {
+            using var symbolImage = await Image.LoadAsync<Rgba32>(symbolPath);
+            symbolImage.Mutate(ctx => ctx.Resize(size, size));
+            image.Mutate(ctx => ctx.DrawImage(symbolImage, new Point(x, y), 1f));
+        }
+        catch (Exception ex) {
+            _logger.LogError(ex, "Failed to render symbol {Symbol}", symbol);
         }
     }
 

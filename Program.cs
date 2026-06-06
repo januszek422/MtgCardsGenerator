@@ -18,6 +18,7 @@ builder.Services.AddScoped<ICardService, CardService>();
 builder.Services.AddHttpClient<IScryfallService, ScryfallService>(client => {
     client.BaseAddress = new Uri("https://api.scryfall.com/");
     client.DefaultRequestHeaders.Add("User-Agent", "MtgCardGenerator/1.0");
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 builder.Services.AddHttpClient<IGeneratorService, GeneratorService>();
 builder.Services.AddScoped<ICardRenderService, CardRenderService>();
@@ -77,6 +78,7 @@ app.UseRateLimiter();
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
